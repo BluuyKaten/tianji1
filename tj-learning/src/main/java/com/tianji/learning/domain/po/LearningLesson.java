@@ -57,12 +57,12 @@ public class LearningLesson implements Serializable {
     /**
      * 学习计划状态，0-没有计划，1-计划进行中
      */
-    private Integer planStatus;
+    private PlanStatus planStatus;
 
     /**
      * 已学习小节数量
      */
-    private PlanStatus learnedSections;
+    private Integer learnedSections;
 
     /**
      * 最近一次学习的小节id
