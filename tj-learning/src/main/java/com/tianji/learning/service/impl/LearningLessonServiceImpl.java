@@ -1,8 +1,11 @@
 package com.tianji.learning.service.impl;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.plugins.pagination.PageDto;
+import com.tianji.api.client.course.CatalogueClient;
+import com.tianji.api.client.course.CategoryClient;
 import com.tianji.api.client.course.CourseClient;
+import com.tianji.api.dto.course.CataSimpleInfoDTO;
+import com.tianji.api.dto.course.CourseFullInfoDTO;
 import com.tianji.api.dto.course.CourseSimpleInfoDTO;
 import com.tianji.common.domain.dto.PageDTO;
 import com.tianji.common.domain.query.PageQuery;
@@ -12,6 +15,7 @@ import com.tianji.common.utils.CollUtils;
 import com.tianji.common.utils.UserContext;
 import com.tianji.learning.domain.po.LearningLesson;
 import com.tianji.learning.domain.vo.LearningLessonVO;
+import com.tianji.learning.enums.LessonStatus;
 import com.tianji.learning.mapper.LearningLessonMapper;
 import com.tianji.learning.service.ILearningLessonService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -42,6 +46,8 @@ public class LearningLessonServiceImpl extends ServiceImpl<LearningLessonMapper,
 
 
     private final CourseClient courseClient;
+    private final CatalogueClient catalogueClient;
+
 
     @Override
     @Transactional
@@ -59,7 +65,7 @@ public class LearningLessonServiceImpl extends ServiceImpl<LearningLessonMapper,
             LearningLesson lesson = new LearningLesson();
             //2.1 获取国企时间
             Integer validDuration = cInfo.getValidDuration();
-            if (validDuration == null && validDuration > 0){
+            if (validDuration != null && validDuration > 0){
                 LocalDateTime now = LocalDateTime.now();
                 lesson.setCreateTime(now);
                 lesson.setExpireTime(now.plusMonths(validDuration));
@@ -114,5 +120,45 @@ public class LearningLessonServiceImpl extends ServiceImpl<LearningLessonMapper,
         }
 
         return PageDTO.of(page,list);
+    }
+
+    @Override
+    public LearningLessonVO queryNowLessons() {
+        //1.首先查询用户信息
+        Long userId = UserContext.getUser();
+        // 2.查询正在学习的课程 select * from xx where user_id = #{userId} AND status = 1 order by latest_learn_time limit 1
+        LearningLesson lesson = lambdaQuery()
+                .eq(LearningLesson::getUserId, userId)
+                .eq(LearningLesson::getStatus, LessonStatus.LEARNING.getValue())
+                .orderByDesc(LearningLesson::getLatestLearnTime)
+                .last("limit 1")
+                .one();
+        if (lesson == null){
+            return null;
+        }
+        //3.拷贝PO（数据库实体）基础属性到VO（前端视图）
+        LearningLessonVO vo = BeanUtils.copyBean(lesson, LearningLessonVO.class);
+        // 4.查询课程信息
+        CourseFullInfoDTO cId = courseClient.getCourseInfoById(lesson.getCourseId(), false, false);
+        if (cId == null){
+            throw new BadRequestException("课程不存在");
+        }
+        vo.setCourseName(cId.getName());
+        vo.setCourseCoverUrl(cId.getCoverUrl());
+        vo.setSections(cId.getSectionNum());
+        // 5.统计课表中的课程数量 select count(1) from xxx where user_id = #{userId}
+        Integer courseAmount = lambdaQuery()
+                .eq(LearningLesson::getUserId, userId)
+                .count();
+        vo.setCourseAmount(courseAmount);
+        // 6.查询小节信息
+        List<CataSimpleInfoDTO> cataInfos =
+                catalogueClient.batchQueryCatalogue(CollUtils.singletonList(lesson.getLatestSectionId()));
+        if (!CollUtils.isEmpty(cataInfos)){
+            CataSimpleInfoDTO cataInfo  = cataInfos.get(0);
+            vo.setLatestSectionName(cataInfo.getName());
+            vo.setLatestSectionIndex(cataInfo.getCIndex());
+        }
+        return vo;
     }
 }
