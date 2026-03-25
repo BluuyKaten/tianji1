@@ -174,9 +174,8 @@ public class LearningLessonServiceImpl extends ServiceImpl<LearningLessonMapper,
         if (lesson == null){
             return null;
         }
-        LearningLessonVO vo = BeanUtils.copyBean(lesson, LearningLessonVO.class);
 
-        return null;
+        return BeanUtils.copyBean(lesson, LearningLessonVO.class);
     }
 
 //    private Wrapper<LearningLesson> buildUserIdAndCourseIdWrapper(Long userId, Long courseId) {
