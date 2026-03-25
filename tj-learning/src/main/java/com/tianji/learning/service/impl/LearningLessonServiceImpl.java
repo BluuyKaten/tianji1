@@ -1,5 +1,10 @@
 package com.tianji.learning.service.impl;
 
+
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.tianji.api.client.course.CatalogueClient;
 import com.tianji.api.client.course.CourseClient;
@@ -125,7 +130,7 @@ public class LearningLessonServiceImpl extends ServiceImpl<LearningLessonMapper,
     public LearningLessonVO queryNowLessons() {
         //1.首先查询用户信息
         Long userId = UserContext.getUser();
-        // 2.查询正在学习的课程 select * from xx where user_id = #{userId} AND status = 1 order by latest_learn_time limit 1
+        // 2.查询正在学习的课程 select * from xx where user_id = #{userId} AND status = 1 order by latest_learn_time Desc limit 1
         LearningLesson lesson = lambdaQuery()
                 .eq(LearningLesson::getUserId, userId)
                 .eq(LearningLesson::getStatus, LessonStatus.LEARNING.getValue())
@@ -160,4 +165,28 @@ public class LearningLessonServiceImpl extends ServiceImpl<LearningLessonMapper,
         }
         return vo;
     }
+
+    @Override
+    public LearningLessonVO queryLessonByCourseId(Long courseId) {
+        Long userId = UserContext.getUser();
+//        LearningLesson lesson = getOne(buildUserIdAndCourseIdWrapper(userId, courseId));
+        // 2.查询课程信息 select * from xx where user_id = #{userId} AND course_id = #{courseId}
+        LambdaQueryChainWrapper<LearningLesson> lesson = lambdaQuery()
+                .eq(LearningLesson::getUserId, userId)
+                .eq(LearningLesson::getCourseId, courseId);
+        if (lesson == null){
+            return null;
+        }
+        LearningLessonVO vo = BeanUtils.copyBean(lesson, LearningLessonVO.class);
+
+        return null;
+    }
+
+//    private Wrapper<LearningLesson> buildUserIdAndCourseIdWrapper(Long userId, Long courseId) {
+//        LambdaQueryWrapper<LearningLesson> queryWrapper = new QueryWrapper<LearningLesson>()
+//                .lambda()
+//                .eq(LearningLesson::getUserId, userId)
+//                .eq(LearningLesson::getCourseId, courseId);
+//        return queryWrapper;
+//    }
 }

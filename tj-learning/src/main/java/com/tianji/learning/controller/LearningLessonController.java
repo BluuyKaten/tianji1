@@ -7,11 +7,9 @@ import com.tianji.learning.domain.vo.LearningLessonVO;
 import com.tianji.learning.service.ILearningLessonService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * <p>
@@ -39,5 +37,12 @@ public class LearningLessonController {
     @ApiOperation("查询我正在学习的课程")
     public LearningLessonVO queryNowLessons(){
         return lessonService.queryNowLessons();
+    }
+
+    @GetMapping("/{courseId}")
+    @ApiOperation("根据id查询指定课程的学习状态")
+    public LearningLessonVO  queryLessonByCourseId(
+            @ApiParam(name = "课程id" ,example = "1") @PathVariable("courseId") Long courseId){
+        return lessonService.queryLessonByCourseId(courseId);
     }
 }
