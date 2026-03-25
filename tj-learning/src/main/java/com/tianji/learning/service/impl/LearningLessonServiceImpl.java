@@ -128,7 +128,7 @@ public class LearningLessonServiceImpl extends ServiceImpl<LearningLessonMapper,
         //1.首先查询用户信息
         Long userId = UserContext.getUser();
         // 2.查询正在学习的课程 select * from xx where user_id = #{userId} AND status = 1 order by latest_learn_time Desc limit 1
-        LearningLesson lesson = lambdaQuery()
+        @SuppressWarnings("unchecked") LearningLesson lesson = lambdaQuery()
                 .eq(LearningLesson::getUserId, userId)
                 .eq(LearningLesson::getStatus, LessonStatus.LEARNING.getValue())
                 .orderByDesc(LearningLesson::getLatestLearnTime)
