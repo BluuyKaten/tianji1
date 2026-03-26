@@ -52,4 +52,17 @@ public class LearningLessonController {
             @ApiParam(name = "课程id" ,example = "1") @PathVariable("courseId") Long courseId) {
         lessonService.deleteCourseFromLesson(null,courseId);
     }
+
+    @GetMapping("/{courseId}/vaild")
+    @ApiOperation("校验指定课程是否是课表中的有效课程")
+    public Long isLessonValid(
+            @ApiParam(value = "课程id",example = "1") @PathVariable("courseId") Long courseId){
+        return lessonService.isLessonValid(courseId);
+    }
+    @GetMapping("/{courseId}/count")
+    @ApiOperation("校验指定课程是否是课表中的有效课程")
+    public Integer countLearningLessonByCourse(
+            @ApiParam(value = "课程id",example = "1") @PathVariable("courseId") Long courseId){
+        return lessonService.countLearningLessonByCourse(courseId);
+    }
 }

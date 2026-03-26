@@ -1,7 +1,8 @@
 package com.tianji.learning.service.impl;
 
 
-import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.tianji.api.client.course.CatalogueClient;
 import com.tianji.api.client.course.CourseClient;
@@ -24,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -166,11 +168,8 @@ public class LearningLessonServiceImpl extends ServiceImpl<LearningLessonMapper,
     @Override
     public LearningLessonVO queryLessonByCourseId(Long courseId) {
         Long userId = UserContext.getUser();
-//        LearningLesson lesson = getOne(buildUserIdAndCourseIdWrapper(userId, courseId));
+        LearningLesson lesson = getOne(buildUserIdAndCourseIdWrapper(userId, courseId));
         // 2.查询课程信息 select * from xx where user_id = #{userId} AND course_id = #{courseId}
-        LambdaQueryChainWrapper<LearningLesson> lesson = lambdaQuery()
-                .eq(LearningLesson::getUserId, userId)
-                .eq(LearningLesson::getCourseId, courseId);
         if (lesson == null){
             return null;
         }
@@ -188,11 +187,36 @@ public class LearningLessonServiceImpl extends ServiceImpl<LearningLessonMapper,
                 .eq(LearningLesson::getCourseId,courseId));
     }
 
-//    private Wrapper<LearningLesson> buildUserIdAndCourseIdWrapper(Long userId, Long courseId) {
-//        LambdaQueryWrapper<LearningLesson> queryWrapper = new QueryWrapper<LearningLesson>()
-//                .lambda()
-//                .eq(LearningLesson::getUserId, userId)
-//                .eq(LearningLesson::getCourseId, courseId);
-//        return queryWrapper;
-//    }
+    @Override
+    public Long isLessonValid(Long courseId) {
+        Long userId = UserContext.getUser();
+        if (userId == null){
+            return null;
+        }
+
+        LearningLesson lesson = getOne(buildUserIdAndCourseIdWrapper(userId,courseId));
+        if (lesson == null){
+            return null;
+        }
+        return lesson.getId();
+    }
+
+    @Override
+    public Integer countLearningLessonByCourse(Long courseId) {
+        // select count(1) from xx where course_id = #{cc} AND status in (0, 1, 2)
+        return lambdaQuery()
+                .eq(LearningLesson::getCourseId, courseId)
+                .in(LearningLesson::getStatus,
+                        LessonStatus.NOT_BEGIN.getValue(),
+                        LessonStatus.LEARNING.getValue(),
+                        LessonStatus.FINISHED.getValue())
+                .count();
+    }
+
+    private LambdaQueryWrapper<LearningLesson> buildUserIdAndCourseIdWrapper(Long userId, Long courseId) {
+        return new QueryWrapper<LearningLesson>()
+                .lambda()
+                .eq(LearningLesson::getUserId, userId)
+                .eq(LearningLesson::getCourseId, courseId);
+    }
 }
