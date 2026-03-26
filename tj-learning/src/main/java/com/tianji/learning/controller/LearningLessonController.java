@@ -45,4 +45,11 @@ public class LearningLessonController {
             @ApiParam(name = "课程id" ,example = "1") @PathVariable("courseId") Long courseId){
         return lessonService.queryLessonByCourseId(courseId);
     }
+
+    @DeleteMapping("/{courseId}")
+    @ApiOperation("删除指定课程信息")
+    public void deleteCourseFromLesson(
+            @ApiParam(name = "课程id" ,example = "1") @PathVariable("courseId") Long courseId) {
+        lessonService.deleteCourseFromLesson(null,courseId);
+    }
 }

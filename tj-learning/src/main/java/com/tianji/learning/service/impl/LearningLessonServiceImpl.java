@@ -178,6 +178,16 @@ public class LearningLessonServiceImpl extends ServiceImpl<LearningLessonMapper,
         return BeanUtils.copyBean(lesson, LearningLessonVO.class);
     }
 
+    @Override
+    public void deleteCourseFromLesson(Long userId, Long courseId) {
+        if (userId == null){
+            userId = UserContext.getUser();
+        }
+        remove(lambdaQuery()
+                .eq(LearningLesson::getUserId,userId)
+                .eq(LearningLesson::getCourseId,courseId));
+    }
+
 //    private Wrapper<LearningLesson> buildUserIdAndCourseIdWrapper(Long userId, Long courseId) {
 //        LambdaQueryWrapper<LearningLesson> queryWrapper = new QueryWrapper<LearningLesson>()
 //                .lambda()
