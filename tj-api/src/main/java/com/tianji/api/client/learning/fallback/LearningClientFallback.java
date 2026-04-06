@@ -19,7 +19,7 @@ public class LearningClientFallback implements FallbackFactory<LearningClient> {
 
             @Override
             public Long isLessonValid(Long courseId) {
-                return null;
+                return 1L;
             }
 
             @Override
