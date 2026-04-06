@@ -250,14 +250,14 @@ public class LearningLessonServiceImpl extends ServiceImpl<LearningLessonMapper,
     @Override
     public LearningPlanPageVO queryMyPlans(PageQuery query) {
         LearningPlanPageVO result = new LearningPlanPageVO();
-        //1.获取当前登录的用户
+        // 1.获取当前登录用户
         Long userId = UserContext.getUser();
-        //2.获取本周的起始时间
+        // 2.获取本周起始时间
         LocalDate now = LocalDate.now();
         LocalDateTime begin = DateUtils.getWeekBeginTime(now);
-        LocalDateTime end= DateUtils.getWeekEndTime(now);
-        //3.查询总的统计数据
-        //3.1本周总的已学习的小节数量
+        LocalDateTime end = DateUtils.getWeekEndTime(now);
+        // 3.查询总的统计数据
+        // 3.1.本周总的已学习小节数量
         Integer weekFinished = recordMapper.selectCount(new LambdaQueryWrapper<LearningRecord>()
                 .eq(LearningRecord::getUserId, userId)
                 .eq(LearningRecord::getFinished, true)
@@ -265,50 +265,50 @@ public class LearningLessonServiceImpl extends ServiceImpl<LearningLessonMapper,
                 .lt(LearningRecord::getFinishTime, end)
         );
         result.setWeekFinished(weekFinished);
-        //3.2本周总的计划学习小节数量
+        // 3.2.本周总的计划学习小节数量
         Integer weekTotalPlan = getBaseMapper().queryTotalPlan(userId);
         result.setWeekTotalPlan(weekTotalPlan);
-        //TODO 3.3本周学习积分
+        // TODO 3.3.本周学习积分
 
-        //4.查询分页数据
-        //4.1分页查询课表信息以及学习计划信息
+        // 4.查询分页数据
+        // 4.1.分页查询课表信息以及学习计划信息
         Page<LearningLesson> p = lambdaQuery()
                 .eq(LearningLesson::getUserId, userId)
                 .eq(LearningLesson::getPlanStatus, PlanStatus.PLAN_RUNNING)
                 .in(LearningLesson::getStatus, LessonStatus.NOT_BEGIN, LessonStatus.LEARNING)
                 .page(query.toMpPage("latest_learn_time", false));
         List<LearningLesson> records = p.getRecords();
-        if (CollUtils.isEmpty(records)){
+        if (CollUtils.isEmpty(records)) {
             return result.emptyPage(p);
         }
-        //4.2 查询课表对应的课程信息
+        // 4.2.查询课表对应的课程信息
         Map<Long, CourseSimpleInfoDTO> cMap = queryCourseSimpleInfoList(records);
-        //4.3统计每一个课程本周已学习小节数量
-        List<IdAndNumDTO> list = recordMapper.countLearnedSections(userId,begin,end);
+        // 4.3.统计每一个课程本周已学习小节数量
+        List<IdAndNumDTO> list = recordMapper.countLearnedSections(userId, begin, end);
         Map<Long, Integer> countMap = IdAndNumDTO.toMap(list);
-        //4.4组装数据VO
+        // 4.4.组装数据VO
         List<LearningPlanVO> voList = new ArrayList<>(records.size());
         for (LearningLesson r : records) {
-            //4.4.1 拷贝基础属性到VO
+            // 4.4.1.拷贝基础属性到vo
             LearningPlanVO vo = BeanUtils.copyBean(r, LearningPlanVO.class);
-            //4.4.2 填充课程详细信息
+            // 4.4.2.填充课程详细信息
             CourseSimpleInfoDTO cInfo = cMap.get(r.getCourseId());
-            if (cInfo != null){
+            if (cInfo != null) {
                 vo.setCourseName(cInfo.getName());
                 vo.setSections(cInfo.getSectionNum());
             }
-            //4.4.3 每个课程的本周已学习小节数量
-            vo.setWeekLearnedSections(countMap.getOrDefault(r.getId(),0));
+            // 4.4.3.每个课程的本周已学习小节数量
+            vo.setWeekLearnedSections(countMap.getOrDefault(r.getId(), 0));
             voList.add(vo);
         }
-
         return result.pageInfo(p.getTotal(), p.getPages(), voList);
     }
 
     private LambdaQueryWrapper<LearningLesson> buildUserIdAndCourseIdWrapper(Long userId, Long courseId) {
-        return new QueryWrapper<LearningLesson>()
+        LambdaQueryWrapper<LearningLesson> queryWrapper = new QueryWrapper<LearningLesson>()
                 .lambda()
                 .eq(LearningLesson::getUserId, userId)
                 .eq(LearningLesson::getCourseId, courseId);
+        return queryWrapper;
     }
 }

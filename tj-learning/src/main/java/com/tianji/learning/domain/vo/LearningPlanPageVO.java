@@ -39,8 +39,10 @@ public class LearningPlanPageVO extends PageDTO<LearningPlanVO> {
         return this;
     }
 
-    public LearningPlanPageVO emptyPage(Page<LearningLesson> p) {
-        return new LearningPlanPageVO().pageInfo(p.getTotal(), p.getPages(), CollUtils.emptyList());
+    public LearningPlanPageVO emptyPage(Page<?> page) {
+        this.total = page.getTotal();
+        this.pages = page.getPages();
+        return this;
     }
 
 

@@ -76,9 +76,9 @@ public class LearningLessonController {
         lessonService.createLearningPlans(PlanDTO.getCourseId(),PlanDTO.getFreq());
     }
 
-    @GetMapping("/plans")
     @ApiOperation("查询我的学习计划")
-    public LearningPlanPageVO queryMyPlans(PageQuery pageQuery){
-        return lessonService.queryMyPlans(pageQuery);
+    @GetMapping("/plans")
+    public LearningPlanPageVO queryMyPlans(PageQuery query){
+        return lessonService.queryMyPlans(query);
     }
 }
