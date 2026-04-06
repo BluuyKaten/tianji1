@@ -5,10 +5,10 @@ import com.tianji.api.client.course.CourseClient;
 import com.tianji.api.dto.course.CourseFullInfoDTO;
 import com.tianji.api.dto.leanring.LearningLessonDTO;
 import com.tianji.api.dto.leanring.LearningRecordDTO;
-import com.tianji.api.dto.leanring.LearningRecordFormDTO;
 import com.tianji.common.exceptions.BizIllegalException;
 import com.tianji.common.utils.BeanUtils;
 import com.tianji.common.utils.UserContext;
+import com.tianji.learning.domain.dto.LearningRecordFormDTO;
 import com.tianji.learning.domain.po.LearningLesson;
 import com.tianji.learning.domain.po.LearningRecord;
 import com.tianji.learning.enums.LessonStatus;
@@ -71,9 +71,7 @@ public class LearningRecordServiceImpl extends ServiceImpl<LearningRecordMapper,
         Long userId = UserContext.getUser();
         //2.处理学习记录
         boolean finished = false;
-        SectionType sectionType = SectionType.of(recordDTO.getSectionType());
-// 2. 枚举之间用 == 比较（枚举专用判断方式）
-        if (sectionType == SectionType.VIDEO)  {
+        if (recordDTO.getSectionType() == SectionType.VIDEO)  {
             //2.1处理视频
             finished = handleVideoRecord(userId, recordDTO);
         }
