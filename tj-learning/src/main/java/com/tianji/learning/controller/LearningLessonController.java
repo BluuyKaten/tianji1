@@ -3,6 +3,7 @@ package com.tianji.learning.controller;
 
 import com.tianji.common.domain.dto.PageDTO;
 import com.tianji.common.domain.query.PageQuery;
+import com.tianji.learning.domain.dto.LearningPlanDTO;
 import com.tianji.learning.domain.vo.LearningLessonVO;
 import com.tianji.learning.service.ILearningLessonService;
 import io.swagger.annotations.Api;
@@ -10,6 +11,8 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 /**
  * <p>
@@ -60,9 +63,15 @@ public class LearningLessonController {
         return lessonService.isLessonValid(courseId);
     }
     @GetMapping("/{courseId}/count")
-    @ApiOperation("校验指定课程是否是课表中的有效课程")
+    @ApiOperation("统计课程学习人数")
     public Integer countLearningLessonByCourse(
             @ApiParam(value = "课程id",example = "1") @PathVariable("courseId") Long courseId){
         return lessonService.countLearningLessonByCourse(courseId);
+    }
+
+    @PostMapping("/plans")
+    @ApiOperation("创建学习计划")
+    public void createLearningPlans(@Valid @RequestBody LearningPlanDTO PlanDTO){
+        lessonService.createLearningPlans(PlanDTO.getCourseId(),PlanDTO.getFreq());
     }
 }
