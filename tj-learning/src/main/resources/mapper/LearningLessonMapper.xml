@@ -3,9 +3,9 @@
 <mapper namespace="com.tianji.learning.mapper.LearningLessonMapper">
 
     <select id="queryTotalPlan" resultType="java.lang.Integer">
-        SELECT sum(week_freq)
+        SELECT SUM(week_freq)
         FROM learning_lesson
         WHERE user_id = #{userId}
-          AND plan_status = 1 AND status IN(0,1)
+          AND plan_status = 1 AND status IN (0, 1)
     </select>
 </mapper>
