@@ -1,0 +1,168 @@
+package com.tianji.learning.service.impl;
+
+import cn.hutool.db.DbRuntimeException;
+import com.tianji.api.client.course.CourseClient;
+import com.tianji.api.dto.course.CourseFullInfoDTO;
+import com.tianji.api.dto.leanring.LearningLessonDTO;
+import com.tianji.api.dto.leanring.LearningRecordDTO;
+import com.tianji.api.dto.leanring.LearningRecordFormDTO;
+import com.tianji.common.exceptions.BizIllegalException;
+import com.tianji.common.utils.BeanUtils;
+import com.tianji.common.utils.UserContext;
+import com.tianji.learning.domain.po.LearningLesson;
+import com.tianji.learning.domain.po.LearningRecord;
+import com.tianji.learning.enums.LessonStatus;
+import com.tianji.learning.enums.SectionType;
+import com.tianji.learning.mapper.LearningRecordMapper;
+import com.tianji.learning.service.ILearningLessonService;
+import com.tianji.learning.service.ILearningRecordService;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+
+/**
+ * <p>
+ * 学习记录表 服务实现类
+ * </p>
+ *
+ * @author CarVak
+ * @since 2026-04-04
+ */
+@Service
+@RequiredArgsConstructor
+public class LearningRecordServiceImpl extends ServiceImpl<LearningRecordMapper, LearningRecord> implements ILearningRecordService {
+
+    private final ILearningLessonService lessonService;
+
+    private final CourseClient courseClient;
+
+
+    @Override
+    public LearningLessonDTO queryLearningRecordByCourse(Long courseId) {
+        //1.获取登录用户
+        Long userId = UserContext.getUser();
+        //2.查询课表
+        LearningLesson lesson =  lessonService.queryByUserIdAndCourseId(userId,courseId);
+        if (lesson == null){
+            return null;
+        }
+        //3.查询学习计划
+        //select * from xx where lesson_id = {lessonId}
+        List<LearningRecord> records = lambdaQuery()
+                .eq(LearningRecord::getLessonId, lesson.getId())
+                .list();
+
+        //4.封装结果
+        LearningLessonDTO dto = new LearningLessonDTO();
+        dto.setId(lesson.getId());
+        dto.setLatestSectionId(lesson.getLatestSectionId());
+        dto.setRecords(BeanUtils.copyList(records, LearningRecordDTO.class));
+        return dto;
+    }
+
+    @Override
+    @Transactional
+    public void addLearningRecord(LearningRecordFormDTO recordDTO) {
+        //1.获取当前用户
+        Long userId = UserContext.getUser();
+        //2.处理学习记录
+        boolean finished = false;
+        SectionType sectionType = SectionType.of(recordDTO.getSectionType());
+// 2. 枚举之间用 == 比较（枚举专用判断方式）
+        if (sectionType == SectionType.VIDEO)  {
+            //2.1处理视频
+            finished = handleVideoRecord(userId, recordDTO);
+        }
+        else {
+            //2.2处理考试
+            finished = handleExamRecord(userId, recordDTO);
+        }
+
+        //3.处理课表数据
+        handleLearningLessonsChanges(recordDTO,finished);
+    }
+
+    private void handleLearningLessonsChanges(LearningRecordFormDTO recordDTO, boolean finished) {
+        //1.查询课表
+        LearningLesson lesson = lessonService.getById(recordDTO.getLessonId());
+        if (lesson == null){
+            throw new BizIllegalException("课程不存在，无法更新数据！");
+        }
+        //2.判断是否有新的完成小姐
+        boolean alllLearned = false;
+        if (finished){
+            //3.如果有新的完成小姐，则需要查询课程数据
+            CourseFullInfoDTO cInfo = courseClient.getCourseInfoById(lesson.getCourseId(), false, false);
+            if (cInfo == null){
+                throw new BizIllegalException("课程不存在，无法更新数据！");
+            }
+            //4.比较课程是否全部学完:已学习小节 >= 课程总小节
+            alllLearned = lesson.getLearnedSections() + 1 >= cInfo.getSectionNum();
+        }
+        //5.更新课表
+        lessonService.lambdaUpdate()
+                .set(lesson.getLearnedSections() == 0, LearningLesson::getStatus, LessonStatus.LEARNING.getValue())
+                .set(alllLearned, LearningLesson::getStatus, LessonStatus.FINISHED.getValue())
+                .set(!alllLearned, LearningLesson::getLatestSectionId,recordDTO.getSectionId())
+                .set(!alllLearned, LearningLesson::getLatestLearnTime,recordDTO.getCommitTime())
+                .setSql(finished,"learned_sections = learned_sections + 1")
+                .eq(LearningLesson::getId, recordDTO.getLessonId())
+                .update();
+
+    }
+
+    private boolean handleVideoRecord(Long userId, LearningRecordFormDTO recordDTO) {
+        //1.查询旧的学习记录
+        LearningRecord old = lambdaQuery()
+                .eq(LearningRecord::getLessonId, recordDTO.getLessonId())
+                .eq(LearningRecord::getSectionId, recordDTO.getSectionId())
+                .one();
+        //2.判断是否存在
+        if(old == null){
+            //3.不存在，则新增
+            //3.1转换dO
+            LearningRecord record = BeanUtils.copyBean(recordDTO, LearningRecord.class);
+            //3.2填充数据
+            record.setUserId(userId);
+            //3.写入数据库
+            boolean suceess = save(record);
+            if (!suceess){
+                throw new DbRuntimeException("新增考试记录失败!");
+            }
+            return false;
+        }
+        //4.存在，则更新
+        //4.1判断是否是第一次完成
+        boolean fininshed = !old.getFinished() && recordDTO.getMoment() * 2  >= recordDTO.getDuration();
+        //4.2更新数据
+        boolean success = lambdaUpdate()
+                .set(LearningRecord::getMoment, recordDTO.getMoment())
+                .set(fininshed, LearningRecord::getFinished, true)
+                .set(fininshed, LearningRecord::getFinishTime, recordDTO.getCommitTime())
+                .eq(LearningRecord::getId, old.getId())
+                .update();
+        if (!success){
+            throw new DbRuntimeException("更新考试记录失败!");
+        }
+
+        return fininshed;
+    }
+
+    private boolean handleExamRecord(Long userId, LearningRecordFormDTO recordDTO) {
+        //1.转换dto为PO
+        LearningRecord record = BeanUtils.copyBean(recordDTO, LearningRecord.class);
+        record.setUserId(userId);
+        record.setFinished(true);
+        record.setCreateTime(recordDTO.getCommitTime());
+        //3.写入数据库
+        boolean suceess = save(record);
+        if (!suceess){
+            throw new DbRuntimeException("新增考试记录失败!");
+        }
+        return true;
+    }
+}
