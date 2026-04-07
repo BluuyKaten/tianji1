@@ -23,7 +23,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/carts")
-@RequiredArgsConstructor
+@RequiredArgsConstructor  //代替Autowire注释
 @Api(tags = "购物车相关接口")
 public class CartController {
 
