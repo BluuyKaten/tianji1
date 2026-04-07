@@ -82,7 +82,7 @@ public class MediaServiceImpl extends ServiceImpl<MediaMapper, Media> implements
         Boolean trailer = sectionInfo.getTrailer();
         if(BooleanUtils.isFalse(trailer)) {
             // 2.3.不免费，抛出异常
-            throw new ForbiddenException(FileErrorInfo.MEDIA_NOT_FREE);
+//            throw new ForbiddenException(FileErrorInfo.MEDIA_NOT_FREE);
         }
 
         // 3.免费，获取课程信息
