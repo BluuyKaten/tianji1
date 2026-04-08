@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.annotation.Resource;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -42,7 +43,7 @@ public class LearningRecordDelayTaskHandler {
     // 静态线程池实例，全局唯一
     private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(CORE_POOL_SIZE);
     */
-
+    @Resource
     private ExecutorService delayTaskExecutor;
 
     @PostConstruct
