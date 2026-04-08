@@ -20,6 +20,8 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.DelayQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -32,9 +34,24 @@ public class LearningRecordDelayTaskHandler {
     private final DelayQueue<DelayTask<RecordTaskData>> queue = new DelayQueue<>();
     private final static String RECORD_KEY_TEMPLATE = "learning:record:{}";
     private static boolean begin = true;
+
+    /* 方案二
+    // CPU 核心数
+    private static final int CORE_POOL_SIZE = Runtime.getRuntime().availableProcessors();
+    // 静态线程池实例，全局唯一
+    private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(CORE_POOL_SIZE);
+    */
+
+    private ExecutorService delayTaskExecutor;
+
     @PostConstruct
     public void init(){
-        CompletableFuture.runAsync(this::handleDelayTask);
+        //方案三
+        delayTaskExecutor.submit(this::handleDelayTask);
+//        方案二
+//        EXECUTOR.submit(this::handleDelayTask);
+
+//        CompletableFuture.runAsync(this::handleDelayTask);
     }
 
     public void destroy(){
@@ -78,7 +95,7 @@ public class LearningRecordDelayTaskHandler {
         //1.添加数据到Redis缓存
         writeRecordCache(record);
         //2.提交延迟任务到延迟队列DelayQueue
-        queue.add(new DelayTask<>(new RecordTaskData(record),Duration.ofSeconds(20)));
+        queue.add(new DelayTask<>(new RecordTaskData(record),Duration.ofSeconds(10)));
     }
 
     public void writeRecordCache(LearningRecord record) {
