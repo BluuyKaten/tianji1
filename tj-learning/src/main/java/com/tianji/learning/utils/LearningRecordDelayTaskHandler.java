@@ -15,13 +15,14 @@ import org.springframework.stereotype.Component;
 
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
+
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+
 
 @Slf4j
 @RequiredArgsConstructor
@@ -54,6 +55,7 @@ public class LearningRecordDelayTaskHandler {
 //        CompletableFuture.runAsync(this::handleDelayTask);
     }
 
+    @PreDestroy
     public void destroy(){
         begin = false;
         log.debug("延迟任务停止执行！");
