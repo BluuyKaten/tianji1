@@ -30,9 +30,4 @@ public class InteractionQuestionController {
         questionService.saveQuestion(questionFormDTO);
     }
 
-    @ApiOperation("修改提问")
-    @PutMapping("/{id}")
-    public void updateQuestion( @Valid @RequestBody QuestionFormDTO questionFormDTO){
-        questionService.updateQuestion(questionFormDTO);
-    }
 }

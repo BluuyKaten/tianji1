@@ -17,4 +17,6 @@ import javax.validation.Valid;
 public interface IInteractionQuestionService extends IService<InteractionQuestion> {
 
     void saveQuestion(@Valid QuestionFormDTO questionFormDTO);
+
+
 }
