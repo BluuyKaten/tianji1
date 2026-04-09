@@ -25,4 +25,6 @@ public interface IInteractionQuestionService extends IService<InteractionQuestio
     void updateQuestion(Long id, @Valid QuestionFormDTO questionFormDTO);
 
     PageDTO<QuestionVO> queryQuestionPage(QuestionPageQuery query);
+
+    QuestionVO queryQuestionById(Long id);
 }
