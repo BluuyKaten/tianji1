@@ -1,6 +1,8 @@
 package com.tianji.learning.service.impl;
 
+import com.tianji.common.exceptions.BadRequestException;
 import com.tianji.common.utils.BeanUtils;
+import com.tianji.common.utils.StringUtils;
 import com.tianji.common.utils.UserContext;
 import com.tianji.learning.domain.dto.QuestionFormDTO;
 import com.tianji.learning.domain.po.InteractionQuestion;
@@ -34,5 +36,33 @@ public class InteractionQuestionServiceImpl extends ServiceImpl<InteractionQuest
         question.setUserId(userId);
         //4.保存问题
         save(question);
+    }
+
+    @Override
+    public void updateQuestion(Long id, QuestionFormDTO dto) {
+        //1.校验
+        //1.1手动校验部分属性
+        if (StringUtils.isBlank(dto.getTitle()) ||
+            StringUtils.isBlank(dto.getDescription()) || dto.getAnonymity() == null){
+            throw new BadRequestException("非法参数");
+        }
+        //1.2校验id
+        InteractionQuestion question = getById(id);
+        if (question == null){
+            throw new BadRequestException("非法参数");
+        }
+        //1.3校验用户（只能修改自己的互动问题）
+        Long userId = UserContext.getUser();
+        if (userId.equals(question.getUserId())) { //Long类型不能用== 比较
+            throw new BadRequestException("不能修改别人的互动问题");
+        }
+
+        //2.dto转换为po
+        question.setTitle(dto.getTitle());
+        question.setDescription(dto.getDescription());
+        question.setAnonymity(dto.getAnonymity());
+
+        //3.修改互动问题数据
+        updateById(question);
     }
 }
