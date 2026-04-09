@@ -1,5 +1,6 @@
 package com.tianji.learning.service.impl;
 
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.tianji.api.client.user.UserClient;
 import com.tianji.api.dto.user.UserDTO;
@@ -18,10 +19,12 @@ import com.tianji.learning.mapper.InteractionQuestionMapper;
 import com.tianji.learning.mapper.InteractionReplyMapper;
 import com.tianji.learning.service.IInteractionQuestionService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.tianji.learning.service.IInteractionReplyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Wrapper;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -39,6 +42,7 @@ public class InteractionQuestionServiceImpl extends ServiceImpl<InteractionQuest
 
     private final InteractionReplyMapper replyMapper;
     private final UserClient userClient;
+    private final IInteractionReplyService replyService;
 
     @Override
     @Transactional
@@ -186,6 +190,29 @@ public class InteractionQuestionServiceImpl extends ServiceImpl<InteractionQuest
             vo.setUserIcon(user.getIcon());
         }
         return vo;
+    }
+
+    @Override
+    public void removeQuestionById(Long id) {
+        //1. 获取当前登录用户id
+        Long userId = UserContext.getUser();
+        //2. 查询问题是否存在
+        InteractionQuestion question = this.getById(id);
+        if (question == null){
+            throw new BadRequestException("该问题不存在");
+        }
+
+        //3.判断是偶是当前用户提问的
+        if  (!question.getUserId().equals(userId)){
+            throw new BadRequestException("该问题不是您提问的！");
+        }
+
+        //4.如果是则删除问题
+        this.removeById(id);
+
+        //然后删除问题下的回答及评论
+        replyService.remove(Wrappers.<InteractionReply>lambdaQuery()
+                .eq(InteractionReply::getQuestionId,id));
     }
 
 }

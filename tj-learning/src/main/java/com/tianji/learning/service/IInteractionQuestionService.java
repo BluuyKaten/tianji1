@@ -27,4 +27,6 @@ public interface IInteractionQuestionService extends IService<InteractionQuestio
     PageDTO<QuestionVO> queryQuestionPage(QuestionPageQuery query);
 
     QuestionVO queryQuestionById(Long id);
+
+    void removeQuestionById(Long id);
 }
