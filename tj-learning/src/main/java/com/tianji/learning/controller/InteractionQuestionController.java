@@ -42,7 +42,7 @@ public class InteractionQuestionController {
     }
 
     @ApiOperation("分页查询互动问题")
-    @GetMapping("/page")
+    @GetMapping("page")
     public PageDTO<QuestionVO> queryQuestionPage(QuestionPageQuery query){
         return questionService.queryQuestionPage(query);
     }
