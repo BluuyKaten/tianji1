@@ -4,6 +4,7 @@ package com.tianji.learning.controller;
 import com.tianji.common.domain.dto.PageDTO;
 import com.tianji.learning.domain.dto.QuestionFormDTO;
 import com.tianji.learning.domain.query.QuestionPageQuery;
+import com.tianji.learning.domain.vo.QuestionAdminVO;
 import com.tianji.learning.domain.vo.QuestionVO;
 import com.tianji.learning.service.IInteractionQuestionService;
 import io.swagger.annotations.Api;
@@ -36,10 +37,12 @@ public class InteractionQuestionController {
         questionService.saveQuestion(questionFormDTO);
     }
 
-    @ApiOperation("修改互动提问")
+    @ApiOperation("修改提问")
     @PutMapping("/{id}")
-    public void updateQuestion(@PathVariable Long id, @RequestBody QuestionFormDTO questionFormDTO){
-        questionService.updateQuestion(id,questionFormDTO);
+    public void updateQuestion(
+            @ApiParam("要修改的问题的id") @PathVariable("id") Long id,
+            @RequestBody QuestionFormDTO questionDTO){
+        questionService.updateQuestion(id, questionDTO);
     }
 
     @ApiOperation("分页查询互动问题")
@@ -48,15 +51,17 @@ public class InteractionQuestionController {
         return questionService.queryQuestionPage(query);
     }
 
-    @ApiOperation("根据id查询问题详情")
-    @PostMapping("{id}")
-    public QuestionVO queryQuestionById(@ApiParam(value = "问题id" ,example = "1") @PathVariable Long id){
+    @ApiOperation("根据id查询互动问题")
+    @GetMapping("{id}")
+    public QuestionVO queryQuestionById(@PathVariable("id") Long id){
         return questionService.queryQuestionById(id);
     }
 
-    @ApiOperation("删除互动问题")
-    @DeleteMapping("{id}")
-    public void removeQuestionById(@PathVariable Long id){
-         questionService.removeQuestionById(id);
+    @ApiOperation("根据id删除当前用户问题")
+    @DeleteMapping("/{id}")
+    public void deleteQuestion(
+            @ApiParam(value = "问题id", example = "1") @PathVariable("id") Long id
+    ){
+        questionService.removeQuestionById(id);
     }
 }
