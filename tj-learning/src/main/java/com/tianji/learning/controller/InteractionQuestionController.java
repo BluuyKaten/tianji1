@@ -57,6 +57,6 @@ public class InteractionQuestionController {
     @ApiOperation("删除互动问题")
     @DeleteMapping("{id}")
     public void removeQuestionById(@PathVariable Long id){
-        return questionService.removeQuestionById(id);
+         questionService.removeQuestionById(id);
     }
 }
