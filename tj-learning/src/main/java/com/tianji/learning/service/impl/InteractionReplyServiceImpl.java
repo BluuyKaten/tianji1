@@ -192,44 +192,44 @@ public class InteractionReplyServiceImpl extends ServiceImpl<InteractionReplyMap
 
     @Override
     public ReplyVO queryReplyById(Long id) {
-        // 1.根据id查询
+        //1.根据id查询
         InteractionReply r = getById(id);
-        // 2.数据处理，需要查询用户信息、评论目标信息、当前用户是否点赞
+        //2.数据处理，需要查询用户信息、评论目标信息、当前用户是否点赞
         Set<Long> userIds = new HashSet<>();
-        // 2.1.获取用户 id
+        //2.1 获取用户id
         userIds.add(r.getUserId());
-        // 2.2.查询评论目标，如果评论目标不是匿名，则需要查询出目标回复的用户id
-        if(r.getTargetReplyId() != null && r.getTargetReplyId() != 0) {
+        //2.2 查询评论目标，如果评论目标不是匿名，则需要查询出目标回复的用户id
+        if (r.getTargetReplyId() != null && r.getTargetReplyId() != 0){
             InteractionReply target = getById(r.getTargetReplyId());
-            if(!target.getAnonymity()) {
-                userIds.add(target.getUserId());
-            }
+            userIds.add(target.getUserId());
         }
-        // 2.3.查询用户详细
-        Map<Long, UserDTO> userMap = new HashMap<>(userIds.size());
-        if(userIds.size() > 0) {
+        //2.3 查询用户详细
+        Map<Long,UserDTO> userMap = new HashMap<>(userIds.size());
+        if (userIds.size() > 0){
             List<UserDTO> users = userClient.queryUserByIds(userIds);
             userMap = users.stream().collect(Collectors.toMap(UserDTO::getId, u -> u));
         }
-        // 2.4.查询用户点赞状态
+        //2.4 查询用户点赞状态
         Set<Long> bizLiked = remarkClient.isBizLiked(CollUtils.singletonList(id));
-        // 4.处理VO
-        // 4.1.拷贝基础属性
+        //4. 处理VO
+        // 4.1 拷贝基础属性
         ReplyVO v = BeanUtils.toBean(r, ReplyVO.class);
-        // 4.2.回复人信息
+        // 4.2 回复人信息
         UserDTO userDTO = userMap.get(r.getUserId());
-        if (userDTO != null) {
+        if (userDTO != null){
             v.setUserIcon(userDTO.getIcon());
             v.setUserName(userDTO.getName());
             v.setUserType(userDTO.getType());
         }
-        // 4.3.目标用户
+        //4.3 目标用户
         UserDTO targetUser = userMap.get(r.getTargetUserId());
-        if (targetUser != null) {
+        if (targetUser != null){
             v.setTargetUserName(targetUser.getName());
         }
-        // 4.4.点赞状态
+        //4.4 点赞状态
         v.setLiked(bizLiked.contains(id));
-        return v;
+        return null;
     }
+
+
 }
