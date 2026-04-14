@@ -24,7 +24,7 @@ import static com.tianji.common.constants.MqConstants.Key.LIKED_TIMES_KEY_TEMPLA
  * 点赞记录表 服务实现类
  * </p>
  *
- * @author 虎哥
+ * @author BluuyKaten
  */
 // @Service
 @RequiredArgsConstructor
@@ -68,7 +68,6 @@ public class LikedRecordServiceImpl extends ServiceImpl<LikedRecordMapper, Liked
     public void readLikedTimesAndSendMessage(String bizType, int maxBizSize) {
 
     }
-
 
     private boolean unlike(LikeRecordFormDTO recordDTO) {
         return remove(new QueryWrapper<LikedRecord>().lambda()

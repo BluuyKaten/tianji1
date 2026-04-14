@@ -41,19 +41,19 @@ public class LikedRecordServiceRedisImpl extends ServiceImpl<LikedRecordMapper, 
 
     @Override
     public void addLikeRecord(LikeRecordFormDTO recordDTO) {
-        //1.基于前端的参数，判断是执行点赞还是取消点赞
-        Boolean success = recordDTO.getLiked() ? like(recordDTO) : unlike(recordDTO);
+        // 1.基于前端的参数，判断是执行点赞还是取消点赞
+        boolean success = recordDTO.getLiked() ? like(recordDTO) : unlike(recordDTO);
         // 2.判断是否执行成功，如果失败，则直接结束
-        if (!success){
+        if (!success) {
             return;
         }
         // 3.如果执行成功，统计点赞总数
-        Long likedTimes =  redisTemplate.opsForSet()
+        Long likedTimes = redisTemplate.opsForSet()
                 .size(RedisConstants.LIKES_BIZ_KEY_PREFIX + recordDTO.getBizId());
-        if (likedTimes != null){
+        if (likedTimes == null) {
             return;
         }
-        // 4. 惠存点总数到Redis
+        // 4.缓存点总数到Redis
         redisTemplate.opsForZSet().add(
                 RedisConstants.LIKES_TIMES_KEY_PREFIX + recordDTO.getBizType(),
                 recordDTO.getBizId().toString(),
