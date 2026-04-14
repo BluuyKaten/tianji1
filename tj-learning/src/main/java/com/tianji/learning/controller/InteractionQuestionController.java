@@ -61,6 +61,6 @@ public class InteractionQuestionController {
     public void deleteQuestion(
             @ApiParam(value = "问题id", example = "1") @PathVariable("id") Long id
     ){
-        questionService.removeQuestionById(id);
+        questionService.deleteById(id);
     }
 }
