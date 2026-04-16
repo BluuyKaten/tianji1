@@ -10,7 +10,6 @@ import com.tianji.learning.enums.PointsRecordType;
 import com.tianji.learning.mapper.PointsRecordMapper;
 import com.tianji.learning.service.IPointsRecordService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.checkerframework.checker.units.qual.N;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -34,10 +33,23 @@ public class PointsRecordServiceImpl extends ServiceImpl<PointsRecordMapper, Poi
         int maxPoints = type.getMaxPoints();
         // 1.判断当前方式有没有积分上限
         int realPoints = points;
-        if (maxPoints > 0){
+        if(maxPoints > 0) {
+            // 2.有，则需要判断是否超过上限
             LocalDateTime begin = DateUtils.getDayStartTime(now);
             LocalDateTime end = DateUtils.getDayEndTime(now);
+            // 2.1.查询今日已得积分
             int currentPoints = queryUserPointsByTypeAndDate(userId, type, begin, end);
+            // 2.2.判断是否超过上限
+            if (currentPoints >= maxPoints){
+                // 2.3.超过，直接结束
+                return;
+            }
+            // 2.4.没超过，保存积分记录
+            PointsRecord p = new PointsRecord();
+            p.setPoints(realPoints);
+            p.setUserId(userId);
+            p.setType(type);
+            save(p);
         }
     }
 

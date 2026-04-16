@@ -1,14 +1,11 @@
 package com.tianji.learning.mq;
 
-import com.tianji.api.dto.trade.OrderBasicDTO;
 import com.tianji.common.constants.MqConstants;
-import com.tianji.common.utils.CollUtils;
 import com.tianji.learning.enums.PointsRecordType;
 import com.tianji.learning.mq.message.SignInMessage;
 import com.tianji.learning.service.IPointsRecordService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.core.ExchangeTypes;
-import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;
