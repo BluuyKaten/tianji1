@@ -20,7 +20,6 @@ public class LessonChangesListener {
 
     private final ILearningLessonService lessonService;
 
-
     /*
     *   支付成功后，MQ传递添加课程信息
     * */
