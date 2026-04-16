@@ -58,7 +58,6 @@ public class SignRecordServiceImpl implements ISignRecordService {
                 rewardPoints = 40;
                 break;
         }
-        // TODO 4.保存积分明细记录
         mqHelper.send(
                 MqConstants.Exchange.LEARNING_EXCHANGE,
                 MqConstants.Key.SIGN_IN,
@@ -86,7 +85,7 @@ public class SignRecordServiceImpl implements ISignRecordService {
             /// 4.计数器+1
             count++;
             // 5.把数字右移一位，最后一位被舍弃，倒数第二位成了最后一位
-            count >>>= 1;
+            num >>>= 1;
         }
         return count;
     }
