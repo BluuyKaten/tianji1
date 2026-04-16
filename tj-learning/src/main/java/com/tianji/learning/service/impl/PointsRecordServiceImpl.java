@@ -40,17 +40,21 @@ public class PointsRecordServiceImpl extends ServiceImpl<PointsRecordMapper, Poi
             // 2.1.查询今日已得积分
             int currentPoints = queryUserPointsByTypeAndDate(userId, type, begin, end);
             // 2.2.判断是否超过上限
-            if (currentPoints >= maxPoints){
+            if(currentPoints >= maxPoints) {
                 // 2.3.超过，直接结束
                 return;
             }
             // 2.4.没超过，保存积分记录
-            PointsRecord p = new PointsRecord();
-            p.setPoints(realPoints);
-            p.setUserId(userId);
-            p.setType(type);
-            save(p);
+            if(currentPoints + points > maxPoints){
+                realPoints = maxPoints - currentPoints;
+            }
         }
+        // 3.没有，直接保存积分记录
+        PointsRecord p = new PointsRecord();
+        p.setPoints(realPoints);
+        p.setUserId(userId);
+        p.setType(type);
+        save(p);
     }
 
     private int queryUserPointsByTypeAndDate(Long userId, PointsRecordType type, LocalDateTime begin, LocalDateTime end) {
