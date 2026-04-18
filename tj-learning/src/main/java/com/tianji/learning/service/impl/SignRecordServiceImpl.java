@@ -4,6 +4,7 @@ import com.tianji.common.autoconfigure.mq.RabbitMqHelper;
 import com.tianji.common.constants.MqConstants;
 import com.tianji.common.exceptions.BizIllegalException;
 import com.tianji.common.utils.*;
+import com.tianji.learning.constants.RedisConstants;
 import com.tianji.learning.domain.vo.SignResultVO;
 import com.tianji.learning.mq.message.SignInMessage;
 import com.tianji.learning.service.ISignRecordService;
@@ -67,6 +68,35 @@ public class SignRecordServiceImpl implements ISignRecordService {
         vo.setSignDays(signDays);
         vo.setRewardPoints(rewardPoints);
         return vo;
+    }
+
+    @Override
+    public Byte[] querySignRecords() {
+        // 1.获取登录用户
+        Long userId = UserContext.getUser();
+        // 2.获取日期
+        LocalDate now = LocalDate.now();
+        int dayOfMonth = now.getDayOfMonth();
+        //3.拼接key
+        String key = SIGN_RECORD_KEY_PREFIX
+                + userId
+                + now;
+        List<Long> resutl = redisTemplate.opsForValue()
+                .bitField(key, BitFieldSubCommands.create().get(
+                        BitFieldSubCommands.BitFieldType.unsigned(now.getDayOfMonth())).valueAt(0));
+        if (CollUtils.isEmpty(resutl)){
+            return new Byte[0];
+        }
+        int num = resutl.get(0).intValue();
+
+        Byte[] arr = new Byte[dayOfMonth];
+        int pos = dayOfMonth - 1;
+        while (pos >= 0){
+            arr[pos--] = (byte) (num & 1);
+            // 把数字右移一位，抛弃最后一个bit位，继续下一个bit位
+            num >>>= 1;
+        }
+        return arr;
     }
 
     private int countSignDays(String key, int len) {

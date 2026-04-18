@@ -38,6 +38,8 @@ public class DateUtils extends LocalDateTimeUtil {
 
     public static final DateTimeFormatter SIGN_DATE_SUFFIX_FORMATTER =
             DateTimeFormatter.ofPattern(":yyyyMM");
+    public static final DateTimeFormatter POINTS_BOARD_SUFFIX_FORMATTER =
+            DateTimeFormatter.ofPattern("yyyyMM");
 
     public static final String TIME_ZONE_8 = "GMT+8";
 
@@ -148,3 +150,4 @@ public class DateUtils extends LocalDateTimeUtil {
         return days;
     }
 }
+
