@@ -5,7 +5,6 @@ import com.tianji.learning.service.IPointsBoardSeasonService;
 import com.tianji.learning.service.IPointsBoardService;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import lombok.RequiredArgsConstructor;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
