@@ -16,4 +16,7 @@ import com.tianji.learning.domain.vo.PointsBoardVO;
 public interface IPointsBoardService extends IService<PointsBoard> {
 
     PointsBoardVO queryPointsBoardBySeason(PointsBoardQuery query);
+
+    void createPointsBoardTableBySeason(Integer season);
+
 }

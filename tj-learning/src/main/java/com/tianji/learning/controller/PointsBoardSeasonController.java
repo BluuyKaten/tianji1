@@ -1,12 +1,9 @@
 package com.tianji.learning.controller;
 
 
-import com.tianji.learning.domain.po.PointsBoardSeason;
 import com.tianji.learning.domain.query.PointsBoardQuery;
-import com.tianji.learning.domain.vo.PointsBoardSeasonVO;
 import com.tianji.learning.domain.vo.PointsBoardVO;
 import com.tianji.learning.service.IPointsBoardService;
-import com.tianji.learning.service.IPointsRecordService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;

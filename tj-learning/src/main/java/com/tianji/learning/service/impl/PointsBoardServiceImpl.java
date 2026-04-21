@@ -90,6 +90,11 @@ public class PointsBoardServiceImpl extends ServiceImpl<PointsBoardMapper, Point
         return vo;
     }
 
+    @Override
+    public void createPointsBoardTableBySeason(Integer season) {
+        getBaseMapper().createPointsBoardTable(POINTS_BOARD_TABLE_PREFIX + season);
+    }
+
     private List<PointsBoard> queryHistoryBoardList(PointsBoardQuery query) {
         // 1.计算表名
         TableInfoContext.setInfo(POINTS_BOARD_TABLE_PREFIX + query.getSeason());
