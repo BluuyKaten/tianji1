@@ -90,6 +90,10 @@ public class PointsBoardServiceImpl extends ServiceImpl<PointsBoardMapper, Point
         return vo;
     }
 
+
+
+
+
     @Override
     public void createPointsBoardTableBySeason(Integer season) {
         getBaseMapper().createPointsBoardTable(POINTS_BOARD_TABLE_PREFIX + season);
@@ -109,6 +113,7 @@ public class PointsBoardServiceImpl extends ServiceImpl<PointsBoardMapper, Point
         return records;
     }
 
+    @Override
     public List<PointsBoard> queryCurrentBoardList(String key, Integer pageNo, Integer pageSize) {
         // 1.计算分页
         /*
