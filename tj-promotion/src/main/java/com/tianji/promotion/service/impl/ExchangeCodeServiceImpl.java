@@ -19,8 +19,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.tianji.promotion.constants.PromotionConstants.COUPON_CODE_SERIAL_KEY;
-import static com.tianji.promotion.constants.PromotionConstants.COUPON_RANGE_KEY;
+import static com.tianji.promotion.constants.PromotionConstants.*;
 
 /**
  * <p>
@@ -55,7 +54,7 @@ public class ExchangeCodeServiceImpl extends ServiceImpl<ExchangeCodeMapper, Exc
         int maxSerialNum = result.intValue();
         List<ExchangeCode> list = new ArrayList<>(totalNum);
         for (int serialNum = maxSerialNum - totalNum + 1; serialNum <= maxSerialNum; serialNum++) {
-            //2.生成兑现码
+            //2.生成兑换码
             String code = CodeUtil.generateCode(serialNum, coupon.getId());
             ExchangeCode e = new ExchangeCode();
             e.setCode(code);
@@ -64,10 +63,10 @@ public class ExchangeCodeServiceImpl extends ServiceImpl<ExchangeCodeMapper, Exc
             e.setExpiredTime(coupon.getIssueEndTime());
             list.add(e);
         }
-        // 3.保持数据库
+        // 3.保存数据库
         saveBatch(list);
 
-        //4. 写入Redis缓存 member: couponId,score : 兑现码的最大序列号
+        //4. 写入Redis缓存 member: couponId,score : 兑换码的最大序列号
         redisTemplate.opsForZSet().add(COUPON_RANGE_KEY,coupon.getId().toString(),maxSerialNum);
     }
 
@@ -80,5 +79,12 @@ public class ExchangeCodeServiceImpl extends ServiceImpl<ExchangeCodeMapper, Exc
                 .page(query.toMpPage());
         // 2.返回数据
         return PageDTO.of(page, c -> new ExchangeCodeVO(c.getId(), c.getCode()));
+    }
+
+    @Override
+    public boolean updateExchangeMark(long serialNum, boolean mark) {
+        //返回值是原来的值，如果原来是0，说明之前没有兑换过，成功；如果原来是1，说明之前已经兑换过了，失败
+        Boolean boo = redisTemplate.opsForValue().setBit(COUPON_CODE_MAP_KEY, serialNum, mark);
+        return boo != null && boo;
     }
 }

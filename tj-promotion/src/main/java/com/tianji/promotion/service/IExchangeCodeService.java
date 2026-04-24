@@ -22,4 +22,6 @@ public interface IExchangeCodeService extends IService<ExchangeCode> {
     void asyncGenerateCode(Coupon coupon);
 
     PageDTO<ExchangeCodeVO> queryCodePage(@Valid CodeQuery query);
+
+    boolean updateExchangeMark(long serialNum, boolean b);
 }
